@@ -1,324 +1,474 @@
-import React, { useState } from 'react';
-
-// Sostituisci questo URL con l'URL della tua Web App di Google Apps Script (vedi istruzioni sotto)
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjScnk8ESsRjZgzjJh9wVpPLWA7aN29pIiPr6pwaVoDe5TZA51JvkqDuGjTOYOzuOe/exec";
-
-export default function App() {
-  const [step, setStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-
-  const [formData, setFormData] = useState({
-    nome: '',
-    scuolaMateria: '',
-    anniInsegnamento: '',
-    livelloWorkspace: '3',
-    esperienzaCT: '', // Nuova: Pensiero Computazionale
-    esperienzaAI: '',
-    sentimento: '',
-    superpoteri: [],
-    sfidaDidattica: '',
-    utilitaAI_CT: [] // Modificata
-  });
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    
-    if (type === 'checkbox') {
-      let currentArray = [...formData[name]];
-      if (checked) {
-        if (currentArray.length < 3) currentArray.push(value);
-      } else {
-        currentArray = currentArray.filter(item => item !== value);
-      }
-      setFormData({ ...formData, [name]: currentArray });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  const nextStep = () => setStep(step + 1);
-  const prevStep = () => setStep(step - 1);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Se l'URL non è stato inserito, simuliamo il successo per testare la UI
-      if (APPS_SCRIPT_URL === "INSERISCI_QUI_IL_TUO_URL_APPS_SCRIPT") {
-        setTimeout(() => {
-          setIsSubmitting(false);
-          setSubmitSuccess(true);
-        }, 1500);
-        return;
-      }
-
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8', // Evita il preflight CORS complesso
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        setSubmitSuccess(true);
-      } else {
-        alert("Errore durante l'invio. Riprova.");
-      }
-    } catch (error) {
-      console.error("Errore:", error);
-      alert("Errore di connessione. Riprova.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (submitSuccess) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-          <div className="text-6xl mb-4">🚀</div>
-          <h2 className="text-3xl font-bold text-slate-800 mb-4">Missione Compiuta!</h2>
-          <p className="text-slate-600">
-            Grazie per aver condiviso la tua esperienza. I tuoi dati ci aiuteranno a creare un corso su AI e Pensiero Computazionale perfetto per te!
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center p-4 font-sans">
-      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pensiero Computazionale nell'era dell'AI</title>
+    <!-- Caricamento di Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        {/* Header */}
-        <div className="bg-indigo-600 p-6 text-white text-center">
-          <h1 className="text-2xl md:text-3xl font-bold">Pensiero Computazionale nell'era dell'AI</h1>
-          <p className="text-indigo-200 mt-2 text-sm md:text-base">Conosciamoci meglio per calibrare le attività didattiche</p>
-        </div>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Animazioni personalizzate */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { opacity: 1; transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+        
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-bounce-in { animation: bounceIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        /* Nasconde le scrollbar nei menu lunghi mantenendo la funzionalità */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-indigo-100 via-purple-50 to-teal-100 min-h-screen flex items-center justify-center p-4 sm:p-6 text-slate-800">
 
-        {/* Progress Bar */}
-        <div className="h-2 bg-indigo-100 w-full">
-          <div 
-            className="h-full bg-indigo-500 transition-all duration-300 ease-out"
-            style={{ width: `${(step / 4) * 100}%` }}
-          ></div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-8">
-          
-          {/* STEP 1: Dati Personali */}
-          {step === 1 && (
-            <div className="space-y-6 animate-fade-in">
-              <h2 className="text-xl font-semibold text-slate-700 border-b pb-2">1. Chi sei?</h2>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nome e Cognome</label>
-                <input 
-                  type="text" required name="nome" value={formData.nome} onChange={handleInputChange}
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                  placeholder="Es. Mario Rossi"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Ordine di scuola e materia</label>
-                <input 
-                  type="text" required name="scuolaMateria" value={formData.scuolaMateria} onChange={handleInputChange}
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
-                  placeholder="Es. Secondaria I grado - Matematica"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Anni di insegnamento</label>
-                <select 
-                  name="anniInsegnamento" value={formData.anniInsegnamento} onChange={handleInputChange} required
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                >
-                  <option value="">Seleziona...</option>
-                  <option value="0-5">0 - 5 anni</option>
-                  <option value="6-15">6 - 15 anni</option>
-                  <option value="16-25">16 - 25 anni</option>
-                  <option value="25+">Più di 25 anni</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 2: Competenze Digitali & Pensiero Computazionale */}
-          {step === 2 && (
-            <div className="space-y-6 animate-fade-in">
-              <h2 className="text-xl font-semibold text-slate-700 border-b pb-2">2. Il tuo background digitale</h2>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-3">
-                  Quanto ti senti a tuo agio con Google Workspace for Education? (1 = Poco, 5 = Tantissimo)
-                </label>
-                <div className="flex justify-between items-center bg-slate-50 p-4 rounded-lg">
-                  <span className="text-xs text-slate-500">Uso base</span>
-                  {[1, 2, 3, 4, 5].map(num => (
-                    <label key={num} className="flex flex-col items-center cursor-pointer">
-                      <input 
-                        type="radio" name="livelloWorkspace" value={num} 
-                        checked={formData.livelloWorkspace === String(num)} onChange={handleInputChange}
-                        className="w-5 h-5 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      <span className="mt-1 text-sm font-medium">{num}</span>
-                    </label>
-                  ))}
-                  <span className="text-xs text-slate-500">Uso avanzato</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Qual è la tua esperienza con il Pensiero Computazionale (Coding, robotica, algoritmi)?</label>
-                <select name="esperienzaCT" value={formData.esperienzaCT} onChange={handleInputChange} required className="w-full p-3 border border-slate-300 rounded-lg">
-                  <option value="">Seleziona...</option>
-                  <option value="Nessuna">Non so esattamente cosa sia.</option>
-                  <option value="Teorica">Ne conosco la teoria, ma non lo applico.</option>
-                  <option value="Pratica Base">Uso strumenti come Scratch o Code.org in classe.</option>
-                  <option value="Avanzata">Insegno coding/robotica regolarmente.</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Hai mai utilizzato strumenti di Intelligenza Artificiale Generativa?</label>
-                <select name="esperienzaAI" value={formData.esperienzaAI} onChange={handleInputChange} required className="w-full p-3 border border-slate-300 rounded-lg">
-                  <option value="">Seleziona...</option>
-                  <option value="Mai">Mai usata.</option>
-                  <option value="Provata">L'ho provata qualche volta per curiosità.</option>
-                  <option value="Personale">La uso per me (es. scrivere email, idee).</option>
-                  <option value="Didattica">La integro già nella preparazione delle lezioni.</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: Visione dell'AI */}
-          {step === 3 && (
-            <div className="space-y-6 animate-fade-in">
-              <h2 className="text-xl font-semibold text-slate-700 border-b pb-2">3. Tu e l'Intelligenza Artificiale</h2>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Quale frase descrive meglio il tuo sentimento verso l'AI a scuola?</label>
-                <div className="space-y-2">
-                  {['Entusiasmo: non vedo l\'ora di trasformare la didattica!', 
-                    'Curiosità: voglio capire come può aiutarmi concretamente.', 
-                    'Cautela: ha potenziale, ma temo impatti negativi (es. copiature).', 
-                    'Scetticismo: credo sia una moda passeggera.'].map(op => (
-                    <label key={op} className="flex items-start p-3 border rounded-lg hover:bg-slate-50 cursor-pointer transition">
-                      <input type="radio" name="sentimento" value={op} onChange={handleInputChange} checked={formData.sentimento === op} className="mt-1 mr-3 text-indigo-600" />
-                      <span className="text-sm">{op}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Se l'AI fosse un "Superpotere" per sviluppare il pensiero computazionale, quale vorresti acquisire? (Max 2)</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {[
-                    'Scomporre problemi complessi in step semplici', 
-                    'Generare snippet di codice/script in automatico', 
-                    'Creare esercizi personalizzati di logica per gli alunni', 
-                    'Spiegare concetti difficili tramite metafore generate dall\'AI',
-                    'Creare rubriche di valutazione per compiti pratici'
-                  ].map(sp => (
-                    <label key={sp} className={`flex items-start p-3 border rounded-lg cursor-pointer transition ${formData.superpoteri.includes(sp) ? 'bg-indigo-50 border-indigo-300' : 'hover:bg-slate-50'}`}>
-                      <input 
-                        type="checkbox" name="superpoteri" value={sp} 
-                        onChange={handleInputChange} checked={formData.superpoteri.includes(sp)}
-                        disabled={formData.superpoteri.length >= 2 && !formData.superpoteri.includes(sp)}
-                        className="mt-1 mr-3 text-indigo-600 rounded" 
-                      />
-                      <span className="text-sm">{sp}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4: Sfide finali */}
-          {step === 4 && (
-            <div className="space-y-6 animate-fade-in">
-              <h2 className="text-xl font-semibold text-slate-700 border-b pb-2">4. Prospettive Didattiche</h2>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Qual è la sfida più grande che affronti oggi nell'insegnare metodologie logiche o informatiche?</label>
-                <textarea 
-                  name="sfidaDidattica" value={formData.sfidaDidattica} onChange={handleInputChange} required
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none h-24"
-                  placeholder="Scrivi qui la tua risposta..."
-                ></textarea>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">In quali aree credi che l'AI ti sarà più utile per questo corso? (Max 3)</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {[
-                    'Progettazione di UDA sul pensiero computazionale',
-                    'Correzione e feedback rapido su elaborati/codice',
-                    'Creazione di immagini/schemi per supportare le lezioni',
-                    'Generazione di prompt per simulazioni storiche/scientifiche',
-                    'Scrittura di App Script o piccoli programmi utili',
-                    'Semplificazione di testi complessi'
-                  ].map(area => (
-                    <label key={area} className={`flex items-start p-2 border rounded-lg cursor-pointer transition ${formData.utilitaAI_CT.includes(area) ? 'bg-indigo-50 border-indigo-300' : 'hover:bg-slate-50'}`}>
-                      <input 
-                        type="checkbox" name="utilitaAI_CT" value={area} 
-                        onChange={handleInputChange} checked={formData.utilitaAI_CT.includes(area)}
-                        disabled={formData.utilitaAI_CT.length >= 3 && !formData.utilitaAI_CT.includes(area)}
-                        className="mt-1 mr-3 text-indigo-600 rounded" 
-                      />
-                      <span className="text-sm">{area}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Navigation Buttons */}
-          <div className="mt-8 flex justify-between items-center pt-4 border-t border-slate-100">
-            {step > 1 ? (
-              <button type="button" onClick={prevStep} className="px-5 py-2 text-indigo-600 font-medium hover:bg-indigo-50 rounded-lg transition">
-                Indietro
-              </button>
-            ) : <div></div>}
-
-            {step < 4 ? (
-              <button 
-                type="button" 
-                onClick={nextStep} 
-                disabled={(step === 1 && (!formData.nome || !formData.scuolaMateria || !formData.anniInsegnamento)) || 
-                          (step === 2 && (!formData.esperienzaCT || !formData.esperienzaAI))}
-                className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Avanti
-              </button>
-            ) : (
-              <button 
-                type="submit" 
-                disabled={isSubmitting || !formData.sfidaDidattica}
-                className="px-6 py-2 bg-emerald-600 text-white font-medium rounded-lg shadow-md hover:bg-emerald-700 transition flex items-center disabled:opacity-50"
-              >
-                {isSubmitting ? 'Invio in corso...' : 'Invia Risposte 🚀'}
-              </button>
-            )}
-          </div>
-          
-        </form>
-      </div>
-      
-      {/* Basic animation styles */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-      `}} />
+    <!-- Sfondo decorativo astratto -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-300/30 blur-3xl"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-teal-300/30 blur-3xl"></div>
     </div>
-  );
-}
+
+    <!-- Schermata di Successo (Nascosta di default) -->
+    <div id="success-view" class="hidden max-w-lg w-full bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-10 text-center border border-white">
+        <div class="text-8xl mb-6 animate-bounce-in drop-shadow-xl inline-block">🚀</div>
+        <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 mb-4 animate-slide-up" style="animation-delay: 0.1s; opacity: 0;">Missione Compiuta!</h2>
+        <p class="text-slate-600 text-lg leading-relaxed animate-slide-up" style="animation-delay: 0.2s; opacity: 0;">
+            Grazie per aver condiviso la tua esperienza. I tuoi dati sono al sicuro e ci aiuteranno a creare un percorso formativo <strong>perfetto per te</strong>!
+        </p>
+    </div>
+
+    <!-- Contenitore Principale del Questionario -->
+    <div id="form-view" class="max-w-3xl w-full bg-white/85 backdrop-blur-2xl rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden border border-white transition-all duration-500">
+        
+        <!-- Header con gradiente -->
+        <div class="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 p-8 sm:p-10 text-white text-center relative overflow-hidden">
+            <!-- Decorazioni Header -->
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
+            <div class="absolute bottom-0 left-0 -mb-4 -ml-4 w-32 h-32 bg-white opacity-10 rounded-full blur-xl"></div>
+            
+            <span class="inline-block py-1 px-3 rounded-full bg-white/20 text-indigo-100 text-xs font-semibold tracking-wider uppercase mb-3 backdrop-blur-md border border-white/10">Questionario Iniziale</span>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-2 relative z-10">Pensiero Computazionale <br class="hidden sm:block"/><span class="font-light">nell'era dell'AI</span></h1>
+            <p class="text-indigo-100 text-sm md:text-base font-medium relative z-10">Aiutaci a calibrare le attività didattiche sulle tue esigenze.</p>
+        </div>
+
+        <!-- Progress Bar Avanzata -->
+        <div class="h-3 bg-slate-100 w-full relative">
+            <div id="progress-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-700 ease-out shadow-[0_0_10px_rgba(52,211,153,0.5)]" style="width: 25%"></div>
+        </div>
+
+        <form id="main-form" class="p-6 sm:p-10">
+            
+            <!-- STEP 1: Dati Personali -->
+            <div id="step-1" class="step-container space-y-8 animate-slide-up">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <span class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                        Chi sei?
+                    </h2>
+                    <span class="text-sm font-medium text-slate-400">Passo 1 di 4</span>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="relative group">
+                        <input type="text" id="nome" name="nome" required
+                            class="peer w-full p-4 pt-6 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:ring-0 focus:border-indigo-500 outline-none transition-all duration-300 text-slate-700 font-medium placeholder-transparent"
+                            placeholder="Nome e Cognome">
+                        <label for="nome" class="absolute left-4 top-2 text-xs font-bold text-slate-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-placeholder-shown:font-normal peer-focus:top-2 peer-focus:text-xs peer-focus:font-bold peer-focus:text-indigo-600 cursor-text">
+                            Nome e Cognome
+                        </label>
+                    </div>
+
+                    <div class="relative group">
+                        <input type="text" id="scuolaMateria" name="scuolaMateria" required
+                            class="peer w-full p-4 pt-6 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:ring-0 focus:border-indigo-500 outline-none transition-all duration-300 text-slate-700 font-medium placeholder-transparent"
+                            placeholder="Ordine di scuola e materia">
+                        <label for="scuolaMateria" class="absolute left-4 top-2 text-xs font-bold text-slate-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-placeholder-shown:font-normal peer-focus:top-2 peer-focus:text-xs peer-focus:font-bold peer-focus:text-indigo-600 cursor-text">
+                            Ordine di scuola e materia (Es. Secondaria - Matematica)
+                        </label>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-slate-600 ml-1">Anni di insegnamento</label>
+                        <select id="anniInsegnamento" name="anniInsegnamento" required
+                            class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:ring-0 focus:border-indigo-500 outline-none transition-all duration-300 text-slate-700 font-medium cursor-pointer appearance-none">
+                            <option value="" disabled selected>Seleziona una fascia d'età...</option>
+                            <option value="0-5">🌱 0 - 5 anni (Prime armi)</option>
+                            <option value="6-15">🌿 6 - 15 anni (Esperienza solida)</option>
+                            <option value="16-25">🌳 16 - 25 anni (Veterano)</option>
+                            <option value="25+">👑 Più di 25 anni (Maestro Jedi)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: Competenze Digitali -->
+            <div id="step-2" class="step-container hidden space-y-8">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <span class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                        Background Digitale
+                    </h2>
+                    <span class="text-sm font-medium text-slate-400">Passo 2 di 4</span>
+                </div>
+                
+                <div class="space-y-8">
+                    <!-- Livello Workspace (Scala 1-5 Custom) -->
+                    <div>
+                        <label class="block text-base font-bold text-slate-700 mb-4">
+                            Quanto ti senti a tuo agio con Google Workspace for Education?
+                        </label>
+                        <div class="flex justify-between items-center bg-white border-2 border-slate-100 p-2 sm:p-4 rounded-2xl shadow-sm">
+                            <span class="hidden sm:block text-xs font-medium text-slate-400 w-16 text-center">Uso base</span>
+                            <div class="flex gap-2 sm:gap-4 w-full sm:w-auto justify-between px-2">
+                                <!-- Scala generata via JS -->
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="livelloWorkspace" value="1" class="peer sr-only">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border-2 border-slate-200 text-slate-500 font-bold peer-checked:bg-rose-500 peer-checked:border-rose-500 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-rose-500/30 transition-all hover:border-rose-300">1</div>
+                                </label>
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="livelloWorkspace" value="2" class="peer sr-only">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border-2 border-slate-200 text-slate-500 font-bold peer-checked:bg-orange-500 peer-checked:border-orange-500 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-orange-500/30 transition-all hover:border-orange-300">2</div>
+                                </label>
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="livelloWorkspace" value="3" checked class="peer sr-only">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border-2 border-slate-200 text-slate-500 font-bold peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-amber-500/30 transition-all hover:border-amber-300">3</div>
+                                </label>
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="livelloWorkspace" value="4" class="peer sr-only">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border-2 border-slate-200 text-slate-500 font-bold peer-checked:bg-emerald-500 peer-checked:border-emerald-500 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-emerald-500/30 transition-all hover:border-emerald-300">4</div>
+                                </label>
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="livelloWorkspace" value="5" class="peer sr-only">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border-2 border-slate-200 text-slate-500 font-bold peer-checked:bg-teal-500 peer-checked:border-teal-500 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-teal-500/30 transition-all hover:border-teal-300">5</div>
+                                </label>
+                            </div>
+                            <span class="hidden sm:block text-xs font-medium text-slate-400 w-16 text-center">Avanzato</span>
+                        </div>
+                    </div>
+
+                    <!-- Esperienze con Dropdown personalizzati -->
+                    <div class="space-y-6">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-bold text-slate-600 ml-1">Esperienza con il Pensiero Computazionale (Coding, Robotica)?</label>
+                            <select id="esperienzaCT" name="esperienzaCT" required
+                                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:ring-0 focus:border-indigo-500 outline-none transition-all duration-300 text-slate-700 font-medium cursor-pointer">
+                                <option value="" disabled selected>Seleziona il tuo livello...</option>
+                                <option value="Nessuna">🤷‍♂️ Non so esattamente cosa sia.</option>
+                                <option value="Teorica">📚 Ne conosco la teoria, ma non lo applico.</option>
+                                <option value="Pratica Base">🧩 Uso strumenti base (es. Scratch) in classe.</option>
+                                <option value="Avanzata">🤖 Insegno coding/robotica regolarmente.</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-bold text-slate-600 ml-1">Uso di Intelligenze Artificiali Generative (ChatGPT, Gemini, ecc.)?</label>
+                            <select id="esperienzaAI" name="esperienzaAI" required
+                                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:ring-0 focus:border-indigo-500 outline-none transition-all duration-300 text-slate-700 font-medium cursor-pointer">
+                                <option value="" disabled selected>Seleziona un'opzione...</option>
+                                <option value="Mai">🚫 Mai usate.</option>
+                                <option value="Provata">👀 Provate qualche volta per curiosità.</option>
+                                <option value="Personale">📝 Le uso per me (es. scrivere email, spunti).</option>
+                                <option value="Didattica">🎓 Le integro già nelle mie lezioni a scuola.</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Visione dell'AI -->
+            <div id="step-3" class="step-container hidden space-y-8">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <span class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
+                        Tu e l'AI
+                    </h2>
+                    <span class="text-sm font-medium text-slate-400">Passo 3 di 4</span>
+                </div>
+                
+                <div>
+                    <label class="block text-base font-bold text-slate-700 mb-3">Quale frase descrive meglio il tuo sentimento verso l'AI a scuola?</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="sentimento-container">
+                        <!-- Generato via JS -->
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-3">
+                        <label class="block text-base font-bold text-slate-700 leading-tight">Se l'AI fosse un "Superpotere", quale vorresti acquisire? <br><span class="text-sm font-normal text-slate-500">Puoi sceglierne massimo 2.</span></label>
+                        <span id="counter-superpoteri" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">0/2</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="superpoteri-container">
+                        <!-- Generato via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: Sfide finali -->
+            <div id="step-4" class="step-container hidden space-y-8">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <span class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">4</span>
+                        Prospettive
+                    </h2>
+                    <span class="text-sm font-medium text-slate-400">Passo 4 di 4</span>
+                </div>
+                
+                <div>
+                    <div class="flex justify-between items-end mb-3">
+                        <label class="block text-base font-bold text-slate-700 leading-tight">In quali aree credi che l'AI ti sarà più utile per questo corso? <br><span class="text-sm font-normal text-slate-500">Seleziona un massimo di 3 opzioni.</span></label>
+                        <span id="counter-utilita" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">0/3</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="utilita-container">
+                        <!-- Generato via JS -->
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <label class="block text-base font-bold text-slate-700 mb-2">Qual è la sfida didattica più grande che affronti oggi?</label>
+                    <textarea id="sfidaDidattica" name="sfidaDidattica" required
+                        class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:bg-white focus:ring-0 focus:border-indigo-500 outline-none transition-all duration-300 text-slate-700 font-medium resize-none h-28"
+                        placeholder="Raccontaci brevemente una difficoltà che riscontri in classe..."></textarea>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="mt-10 flex justify-between items-center pt-6 border-t border-slate-100">
+                <button type="button" id="btn-prev" class="px-6 py-3 text-slate-500 font-bold hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200" style="visibility: hidden;">
+                    &larr; Indietro
+                </button>
+
+                <button type="button" id="btn-next" class="px-8 py-3 bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-800/20 hover:bg-indigo-600 hover:shadow-indigo-500/30 transition-all duration-300 transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    Avanti &rarr;
+                </button>
+
+                <button type="submit" id="btn-submit" class="hidden px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-0.5 transition-all duration-300 transform active:scale-95 disabled:opacity-50 flex items-center gap-2">
+                    Invia Risposte <span class="text-xl">🚀</span>
+                </button>
+            </div>
+            
+        </form>
+    </div>
+
+    <!-- Logica JavaScript -->
+    <script>
+        // Sostituisci questo URL con il link della tua App Script pubblicata
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw33xllTMWSMxWm0V1rs6vT0CgE7xJi7lIY6HhI5miLnkMrAmxQcf7eHpm8F0XXjqHr/exec"; 
+        
+        let currentStep = 1;
+        let isSubmitting = false;
+
+        const formData = {
+            nome: '', scuolaMateria: '', anniInsegnamento: '',
+            livelloWorkspace: '3', esperienzaCT: '', esperienzaAI: '',
+            sentimento: '', superpoteri: [], sfidaDidattica: '', utilitaAI_CT: []
+        };
+
+        // Dati arricchiti con Icone per un look premium
+        const sentimenti = [
+            { id: 's1', text: 'Entusiasmo: non vedo l\'ora!', icon: '🤩', value: 'Entusiasmo' },
+            { id: 's2', text: 'Curiosità: voglio capire come usarla.', icon: '🤔', value: 'Curiosita' },
+            { id: 's3', text: 'Cautela: temo impatti negativi.', icon: '🤨', value: 'Cautela' },
+            { id: 's4', text: 'Scetticismo: è una moda passeggera.', icon: '🥱', value: 'Scetticismo' }
+        ];
+        
+        const superpoteriOpts = [
+            { id: 'p1', text: 'Scomporre problemi complessi', icon: '🧩' },
+            { id: 'p2', text: 'Generare script/codice in automatico', icon: '💻' },
+            { id: 'p3', text: 'Creare esercizi di logica personalizzati', icon: '🧠' },
+            { id: 'p4', text: 'Spiegare concetti con metafore', icon: '💡' },
+            { id: 'p5', text: 'Creare rubriche di valutazione', icon: '📊' }
+        ];
+
+        const utilitaOpts = [
+            { id: 'u1', text: 'Progettazione UDA sul coding', icon: '🎯' },
+            { id: 'u2', text: 'Correzione e feedback elaborati', icon: '✅' },
+            { id: 'u3', text: 'Creazione immagini/schemi per lezioni', icon: '🎨' },
+            { id: 'u4', text: 'Prompt per simulazioni interattive', icon: '🔬' },
+            { id: 'u5', text: 'Scrittura App Script automatizzati', icon: '⚙️' },
+            { id: 'u6', text: 'Semplificazione di testi complessi', icon: '📝' }
+        ];
+
+        // Generazione HTML dinamico tramite CSS puro per gli stati (peer-checked)
+        function initDOM() {
+            // Genera Card Sentimenti (Radio)
+            const sentCont = document.getElementById('sentimento-container');
+            sentimenti.forEach(op => {
+                sentCont.innerHTML += `
+                    <label class="relative cursor-pointer group">
+                        <input type="radio" name="sentimento" value="${op.value}" class="peer sr-only">
+                        <div class="h-full p-4 rounded-2xl border-2 border-slate-100 bg-white hover:border-indigo-200 transition-all duration-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:shadow-md flex items-center gap-3">
+                            <span class="text-2xl">${op.icon}</span>
+                            <span class="text-sm font-semibold text-slate-600 peer-checked:text-indigo-800">${op.text}</span>
+                        </div>
+                    </label>`;
+            });
+
+            // Genera Card Superpoteri (Checkbox max 2)
+            const supCont = document.getElementById('superpoteri-container');
+            superpoteriOpts.forEach(sp => {
+                supCont.innerHTML += `
+                    <label class="relative cursor-pointer group cb-superpoteri">
+                        <input type="checkbox" name="superpoteri" value="${sp.text}" class="peer sr-only">
+                        <div class="h-full p-4 rounded-2xl border-2 border-slate-100 bg-white hover:border-violet-200 transition-all duration-200 peer-checked:border-violet-600 peer-checked:bg-violet-50 peer-checked:shadow-md peer-disabled:opacity-40 peer-disabled:cursor-not-allowed flex items-center gap-3">
+                            <span class="text-2xl">${sp.icon}</span>
+                            <span class="text-sm font-semibold text-slate-600">${sp.text}</span>
+                        </div>
+                    </label>`;
+            });
+
+            // Genera Card Utilità (Checkbox max 3)
+            const utCont = document.getElementById('utilita-container');
+            utilitaOpts.forEach(area => {
+                utCont.innerHTML += `
+                    <label class="relative cursor-pointer group cb-utilita">
+                        <input type="checkbox" name="utilitaAI_CT" value="${area.text}" class="peer sr-only">
+                        <div class="h-full p-4 rounded-2xl border-2 border-slate-100 bg-white hover:border-teal-200 transition-all duration-200 peer-checked:border-teal-500 peer-checked:bg-teal-50 peer-checked:shadow-md peer-disabled:opacity-40 peer-disabled:cursor-not-allowed flex items-center gap-3">
+                            <span class="text-2xl">${area.icon}</span>
+                            <span class="text-sm font-semibold text-slate-600">${area.text}</span>
+                        </div>
+                    </label>`;
+            });
+        }
+
+        function handleInput(e) {
+            const { name, value, type, checked } = e.target;
+            
+            if (type === 'checkbox') {
+                const max = name === 'superpoteri' ? 2 : 3;
+                
+                if (checked) {
+                    if (formData[name].length >= max) {
+                        e.target.checked = false; 
+                        return;
+                    }
+                    formData[name].push(value);
+                } else {
+                    formData[name] = formData[name].filter(item => item !== value);
+                }
+                
+                // Aggiorna limiti visivi (CSS peer-disabled fa il resto)
+                const isAtLimit = formData[name].length >= max;
+                document.querySelectorAll(`input[name="${name}"]`).forEach(cb => {
+                    if (!cb.checked) cb.disabled = isAtLimit;
+                });
+
+                // Aggiorna contatori testuali
+                if(name === 'superpoteri') document.getElementById('counter-superpoteri').innerText = `${formData[name].length}/2`;
+                if(name === 'utilitaAI_CT') document.getElementById('counter-utilita').innerText = `${formData[name].length}/3`;
+
+            } else {
+                formData[name] = value;
+            }
+            
+            validateStep();
+        }
+
+        function validateStep() {
+            const btnNext = document.getElementById('btn-next');
+            const btnSubmit = document.getElementById('btn-submit');
+            let isValid = false;
+
+            if (currentStep === 1) {
+                isValid = formData.nome.trim() !== '' && formData.scuolaMateria.trim() !== '' && formData.anniInsegnamento !== '';
+            } else if (currentStep === 2) {
+                isValid = formData.esperienzaCT !== '' && formData.esperienzaAI !== '';
+            } else if (currentStep === 3) {
+                isValid = formData.sentimento !== ''; // Reso obbligatorio per UX
+            } else if (currentStep === 4) {
+                isValid = formData.sfidaDidattica.trim() !== '';
+            }
+
+            if(currentStep < 4) {
+                btnNext.disabled = !isValid;
+            } else {
+                btnSubmit.disabled = !isValid || isSubmitting;
+            }
+        }
+
+        function updateView() {
+            document.querySelectorAll('.step-container').forEach((el, index) => {
+                if (index + 1 === currentStep) {
+                    el.classList.remove('hidden');
+                    el.classList.remove('animate-slide-up');
+                    void el.offsetWidth; // trigger reflow
+                    el.classList.add('animate-slide-up');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('progress-bar').style.width = `${(currentStep / 4) * 100}%`;
+
+            document.getElementById('btn-prev').style.visibility = currentStep > 1 ? 'visible' : 'hidden';
+            
+            if (currentStep === 4) {
+                document.getElementById('btn-next').classList.add('hidden');
+                document.getElementById('btn-submit').classList.remove('hidden');
+                document.getElementById('btn-submit').classList.add('flex');
+            } else {
+                document.getElementById('btn-next').classList.remove('hidden');
+                document.getElementById('btn-submit').classList.add('hidden');
+                document.getElementById('btn-submit').classList.remove('flex');
+            }
+
+            validateStep();
+        }
+
+        document.getElementById('btn-next').addEventListener('click', () => { if (currentStep < 4) { currentStep++; updateView(); } });
+        document.getElementById('btn-prev').addEventListener('click', () => { if (currentStep > 1) { currentStep--; updateView(); } });
+        document.getElementById('main-form').addEventListener('input', handleInput);
+        document.getElementById('main-form').addEventListener('change', handleInput);
+
+        document.getElementById('main-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnSubmit = document.getElementById('btn-submit');
+            
+            if (APPS_SCRIPT_URL === "INSERISCI_QUI_IL_LINK_CHE_TI_HA_GENERATO_GOOGLE") {
+                alert("ATTENZIONE: Devi prima inserire l'URL di Google Apps Script nel codice riga 259!");
+                return;
+            }
+
+            isSubmitting = true;
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Invio in corso...';
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    document.getElementById('form-view').classList.add('hidden');
+                    document.getElementById('success-view').classList.remove('hidden');
+                    document.getElementById('success-view').classList.add('block');
+                } else {
+                    throw new Error("Errore Network");
+                }
+            } catch (error) {
+                console.error("Errore:", error);
+                alert("Si è verificato un errore durante l'invio. Riprova.");
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = 'Invia Risposte <span class="text-xl">🚀</span>';
+            } finally {
+                isSubmitting = false;
+            }
+        });
+
+        initDOM();
+        updateView();
+    </script>
+</body>
+</html>
