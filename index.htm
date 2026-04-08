@@ -1,0 +1,324 @@
+import React, { useState } from 'react';
+
+// Sostituisci questo URL con l'URL della tua Web App di Google Apps Script (vedi istruzioni sotto)
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjScnk8ESsRjZgzjJh9wVpPLWA7aN29pIiPr6pwaVoDe5TZA51JvkqDuGjTOYOzuOe/exec";
+
+export default function App() {
+  const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const [formData, setFormData] = useState({
+    nome: '',
+    scuolaMateria: '',
+    anniInsegnamento: '',
+    livelloWorkspace: '3',
+    esperienzaCT: '', // Nuova: Pensiero Computazionale
+    esperienzaAI: '',
+    sentimento: '',
+    superpoteri: [],
+    sfidaDidattica: '',
+    utilitaAI_CT: [] // Modificata
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      let currentArray = [...formData[name]];
+      if (checked) {
+        if (currentArray.length < 3) currentArray.push(value);
+      } else {
+        currentArray = currentArray.filter(item => item !== value);
+      }
+      setFormData({ ...formData, [name]: currentArray });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const nextStep = () => setStep(step + 1);
+  const prevStep = () => setStep(step - 1);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Se l'URL non è stato inserito, simuliamo il successo per testare la UI
+      if (APPS_SCRIPT_URL === "INSERISCI_QUI_IL_TUO_URL_APPS_SCRIPT") {
+        setTimeout(() => {
+          setIsSubmitting(false);
+          setSubmitSuccess(true);
+        }, 1500);
+        return;
+      }
+
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8', // Evita il preflight CORS complesso
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        setSubmitSuccess(true);
+      } else {
+        alert("Errore durante l'invio. Riprova.");
+      }
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Errore di connessione. Riprova.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (submitSuccess) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="text-6xl mb-4">🚀</div>
+          <h2 className="text-3xl font-bold text-slate-800 mb-4">Missione Compiuta!</h2>
+          <p className="text-slate-600">
+            Grazie per aver condiviso la tua esperienza. I tuoi dati ci aiuteranno a creare un corso su AI e Pensiero Computazionale perfetto per te!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center p-4 font-sans">
+      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
+        
+        {/* Header */}
+        <div className="bg-indigo-600 p-6 text-white text-center">
+          <h1 className="text-2xl md:text-3xl font-bold">Pensiero Computazionale nell'era dell'AI</h1>
+          <p className="text-indigo-200 mt-2 text-sm md:text-base">Conosciamoci meglio per calibrare le attività didattiche</p>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="h-2 bg-indigo-100 w-full">
+          <div 
+            className="h-full bg-indigo-500 transition-all duration-300 ease-out"
+            style={{ width: `${(step / 4) * 100}%` }}
+          ></div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-8">
+          
+          {/* STEP 1: Dati Personali */}
+          {step === 1 && (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-xl font-semibold text-slate-700 border-b pb-2">1. Chi sei?</h2>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nome e Cognome</label>
+                <input 
+                  type="text" required name="nome" value={formData.nome} onChange={handleInputChange}
+                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  placeholder="Es. Mario Rossi"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Ordine di scuola e materia</label>
+                <input 
+                  type="text" required name="scuolaMateria" value={formData.scuolaMateria} onChange={handleInputChange}
+                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                  placeholder="Es. Secondaria I grado - Matematica"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Anni di insegnamento</label>
+                <select 
+                  name="anniInsegnamento" value={formData.anniInsegnamento} onChange={handleInputChange} required
+                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                >
+                  <option value="">Seleziona...</option>
+                  <option value="0-5">0 - 5 anni</option>
+                  <option value="6-15">6 - 15 anni</option>
+                  <option value="16-25">16 - 25 anni</option>
+                  <option value="25+">Più di 25 anni</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Competenze Digitali & Pensiero Computazionale */}
+          {step === 2 && (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-xl font-semibold text-slate-700 border-b pb-2">2. Il tuo background digitale</h2>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-3">
+                  Quanto ti senti a tuo agio con Google Workspace for Education? (1 = Poco, 5 = Tantissimo)
+                </label>
+                <div className="flex justify-between items-center bg-slate-50 p-4 rounded-lg">
+                  <span className="text-xs text-slate-500">Uso base</span>
+                  {[1, 2, 3, 4, 5].map(num => (
+                    <label key={num} className="flex flex-col items-center cursor-pointer">
+                      <input 
+                        type="radio" name="livelloWorkspace" value={num} 
+                        checked={formData.livelloWorkspace === String(num)} onChange={handleInputChange}
+                        className="w-5 h-5 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="mt-1 text-sm font-medium">{num}</span>
+                    </label>
+                  ))}
+                  <span className="text-xs text-slate-500">Uso avanzato</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Qual è la tua esperienza con il Pensiero Computazionale (Coding, robotica, algoritmi)?</label>
+                <select name="esperienzaCT" value={formData.esperienzaCT} onChange={handleInputChange} required className="w-full p-3 border border-slate-300 rounded-lg">
+                  <option value="">Seleziona...</option>
+                  <option value="Nessuna">Non so esattamente cosa sia.</option>
+                  <option value="Teorica">Ne conosco la teoria, ma non lo applico.</option>
+                  <option value="Pratica Base">Uso strumenti come Scratch o Code.org in classe.</option>
+                  <option value="Avanzata">Insegno coding/robotica regolarmente.</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Hai mai utilizzato strumenti di Intelligenza Artificiale Generativa?</label>
+                <select name="esperienzaAI" value={formData.esperienzaAI} onChange={handleInputChange} required className="w-full p-3 border border-slate-300 rounded-lg">
+                  <option value="">Seleziona...</option>
+                  <option value="Mai">Mai usata.</option>
+                  <option value="Provata">L'ho provata qualche volta per curiosità.</option>
+                  <option value="Personale">La uso per me (es. scrivere email, idee).</option>
+                  <option value="Didattica">La integro già nella preparazione delle lezioni.</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: Visione dell'AI */}
+          {step === 3 && (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-xl font-semibold text-slate-700 border-b pb-2">3. Tu e l'Intelligenza Artificiale</h2>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Quale frase descrive meglio il tuo sentimento verso l'AI a scuola?</label>
+                <div className="space-y-2">
+                  {['Entusiasmo: non vedo l\'ora di trasformare la didattica!', 
+                    'Curiosità: voglio capire come può aiutarmi concretamente.', 
+                    'Cautela: ha potenziale, ma temo impatti negativi (es. copiature).', 
+                    'Scetticismo: credo sia una moda passeggera.'].map(op => (
+                    <label key={op} className="flex items-start p-3 border rounded-lg hover:bg-slate-50 cursor-pointer transition">
+                      <input type="radio" name="sentimento" value={op} onChange={handleInputChange} checked={formData.sentimento === op} className="mt-1 mr-3 text-indigo-600" />
+                      <span className="text-sm">{op}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Se l'AI fosse un "Superpotere" per sviluppare il pensiero computazionale, quale vorresti acquisire? (Max 2)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {[
+                    'Scomporre problemi complessi in step semplici', 
+                    'Generare snippet di codice/script in automatico', 
+                    'Creare esercizi personalizzati di logica per gli alunni', 
+                    'Spiegare concetti difficili tramite metafore generate dall\'AI',
+                    'Creare rubriche di valutazione per compiti pratici'
+                  ].map(sp => (
+                    <label key={sp} className={`flex items-start p-3 border rounded-lg cursor-pointer transition ${formData.superpoteri.includes(sp) ? 'bg-indigo-50 border-indigo-300' : 'hover:bg-slate-50'}`}>
+                      <input 
+                        type="checkbox" name="superpoteri" value={sp} 
+                        onChange={handleInputChange} checked={formData.superpoteri.includes(sp)}
+                        disabled={formData.superpoteri.length >= 2 && !formData.superpoteri.includes(sp)}
+                        className="mt-1 mr-3 text-indigo-600 rounded" 
+                      />
+                      <span className="text-sm">{sp}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: Sfide finali */}
+          {step === 4 && (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-xl font-semibold text-slate-700 border-b pb-2">4. Prospettive Didattiche</h2>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Qual è la sfida più grande che affronti oggi nell'insegnare metodologie logiche o informatiche?</label>
+                <textarea 
+                  name="sfidaDidattica" value={formData.sfidaDidattica} onChange={handleInputChange} required
+                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none h-24"
+                  placeholder="Scrivi qui la tua risposta..."
+                ></textarea>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">In quali aree credi che l'AI ti sarà più utile per questo corso? (Max 3)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {[
+                    'Progettazione di UDA sul pensiero computazionale',
+                    'Correzione e feedback rapido su elaborati/codice',
+                    'Creazione di immagini/schemi per supportare le lezioni',
+                    'Generazione di prompt per simulazioni storiche/scientifiche',
+                    'Scrittura di App Script o piccoli programmi utili',
+                    'Semplificazione di testi complessi'
+                  ].map(area => (
+                    <label key={area} className={`flex items-start p-2 border rounded-lg cursor-pointer transition ${formData.utilitaAI_CT.includes(area) ? 'bg-indigo-50 border-indigo-300' : 'hover:bg-slate-50'}`}>
+                      <input 
+                        type="checkbox" name="utilitaAI_CT" value={area} 
+                        onChange={handleInputChange} checked={formData.utilitaAI_CT.includes(area)}
+                        disabled={formData.utilitaAI_CT.length >= 3 && !formData.utilitaAI_CT.includes(area)}
+                        className="mt-1 mr-3 text-indigo-600 rounded" 
+                      />
+                      <span className="text-sm">{area}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="mt-8 flex justify-between items-center pt-4 border-t border-slate-100">
+            {step > 1 ? (
+              <button type="button" onClick={prevStep} className="px-5 py-2 text-indigo-600 font-medium hover:bg-indigo-50 rounded-lg transition">
+                Indietro
+              </button>
+            ) : <div></div>}
+
+            {step < 4 ? (
+              <button 
+                type="button" 
+                onClick={nextStep} 
+                disabled={(step === 1 && (!formData.nome || !formData.scuolaMateria || !formData.anniInsegnamento)) || 
+                          (step === 2 && (!formData.esperienzaCT || !formData.esperienzaAI))}
+                className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Avanti
+              </button>
+            ) : (
+              <button 
+                type="submit" 
+                disabled={isSubmitting || !formData.sfidaDidattica}
+                className="px-6 py-2 bg-emerald-600 text-white font-medium rounded-lg shadow-md hover:bg-emerald-700 transition flex items-center disabled:opacity-50"
+              >
+                {isSubmitting ? 'Invio in corso...' : 'Invia Risposte 🚀'}
+              </button>
+            )}
+          </div>
+          
+        </form>
+      </div>
+      
+      {/* Basic animation styles */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+      `}} />
+    </div>
+  );
+}
